@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Doll Management | Premium Agency</title>
+  <meta name="description" content="Únete a Olymp Date con Doll Management. El modelo de negocio que transformará tus ingresos." />
+  
+  <!-- Tipografías: Geometric Sans Serif (Poppins) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  
+  <!-- Iconos -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS & Alpine.js -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <!-- Configuración de Tailwind -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Poppins', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              white: '#FFFFFF',
+              black: '#000000',
+              dark: '#222222',
+              softDark: '#333333',
+              lightGray: '#F5F5F5',
+              textGray: '#666666',
+              purple: '#5312D5',
+            }
+          },
+          boxShadow: {
+            'subtle': '0 2px 12px rgba(0,0,0,0.06)',
+            'glow': '0 0 40px rgba(255,255,255,0.1)',
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-out forwards',
+            'slide-up': 'slideUp 0.6s ease-out forwards',
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            slideUp: {
+              '0%': { opacity: '0', transform: 'translateY(16px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #222222;
+      color: #F5F5F5;
+      -webkit-font-smoothing: antialiased;
+    }
+    .blur-content {
+      filter: blur(10px);
+      pointer-events: none;
+      user-select: none;
+    }
+    .no-scroll {
+      overflow: hidden;
+    }
+    .text-shadow-video {
+      text-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), 0 1px 4px rgba(0, 0, 0, 0.4);
+    }
+    /* Ocultar controles nativos de video en iOS/Webkit */
+    video::-webkit-media-controls {
+      display: none !important;
+    }
+    /* Estilo para las casillas de verificación (Checkboxes) */
+    .custom-checkbox {
+      appearance: none;
+      background-color: transparent;
+      margin: 0;
+      font: inherit;
+      color: currentColor;
+      width: 1.25em;
+      height: 1.25em;
+      border: 2px solid #666666;
+      border-radius: 0.25em;
+      display: grid;
+      place-content: center;
+      transition: all 0.2s ease-in-out;
+    }
+    .custom-checkbox::before {
+      content: "";
+      width: 0.65em;
+      height: 0.65em;
+      transform: scale(0);
+      transition: 120ms transform ease-in-out;
+      box-shadow: inset 1em 1em white;
+      background-color: white;
+      transform-origin: center;
+      clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+    }
+    .custom-checkbox:checked {
+      background-color: #5312D5;
+      border-color: #5312D5;
+    }
+    .custom-checkbox:checked::before {
+      transform: scale(1);
+    }
+  </style>
+</head>
+
+<body x-data="landingLogic()" :class="{'no-scroll': !ageVerified || activeModal !== null}">
+
+  <!-- 1. AGE GATE (Verificación Legal +18) -->
+  <div x-show="!ageVerified" 
+       class="fixed inset-0 z-[999] flex items-center justify-center bg-brand-dark/98 backdrop-blur-xl transition-opacity duration-500"
+       x-transition:leave="transition ease-in duration-300"
+       x-transition:leave-start="opacity-100"
+       x-transition:leave-end="opacity-0"
+       style="display: none;"
+       role="dialog" aria-labelledby="age-gate-title" aria-modal="true">
+    
+    <div class="bg-brand-softDark border border-brand-lightGray/10 p-8 md:p-12 rounded-[12px] max-w-lg w-[90%] text-center shadow-2xl animate-slide-up">
+      <div class="w-14 h-14 bg-brand-purple/20 text-brand-purple rounded-full flex items-center justify-center mx-auto mb-6" aria-hidden="true">
+        <span class="material-symbols-outlined text-[28px]">gavel</span>
+      </div>
+      <h2 id="age-gate-title" class="text-2xl md:text-3xl font-bold mb-4 tracking-tight text-brand-white">Verificación de Edad</h2>
+      <p class="text-brand-lightGray/80 text-sm md:text-base leading-relaxed mb-8">
+        Doll Management ofrece servicios de representación vinculados a plataformas para adultos. Debes tener al menos 18 años de edad para acceder a este sitio y sus oportunidades.
+      </p>
+      
+      <div class="flex flex-col gap-3">
+        <button @click="acceptAge()" aria-label="Confirmar que tengo más de 18 años" class="w-full py-3.5 rounded-[12px] bg-brand-white text-brand-black font-semibold text-sm uppercase tracking-wide hover:bg-gray-200 transition-colors focus:ring-4 focus:ring-brand-white/50">
+          Sí, tengo más de 18 años
+        </button>
+        <a href="https://google.com" aria-label="Soy menor de edad, salir de la página" class="w-full py-3.5 rounded-[12px] border border-brand-lightGray/20 text-brand-lightGray font-medium text-sm uppercase tracking-wide hover:bg-brand-lightGray/5 transition-colors text-center focus:ring-4 focus:ring-brand-white/50">
+          Soy menor de edad (Salir)
+        </a>
+      </div>
+      <p class="text-[11px] text-brand-lightGray/50 mt-6 uppercase tracking-widest">
+        Operado por Doll Management (DBA: Rossell. M.)
+      </p>
+    </div>
+  </div>
+
+  <!-- Contenedor Principal -->
+  <div :class="{'blur-content': !ageVerified || activeModal !== null}" class="transition-all duration-500 min-h-[100dvh] flex flex-col relative">
+
+    <!-- BACKGROUND BLURRED VIDEO -->
+    <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-brand-black">
+      <video x-ref="bgVideo" muted loop playsinline class="absolute top-1/2 left-1/2 w-[200vw] h-[200vh] md:w-[150vw] md:h-[150vh] -translate-x-1/2 -translate-y-1/2 opacity-25 blur-[40px] object-cover" aria-hidden="true">
+        <source src="https://pub-c87f0e975c6440f09b2a0b52ff33f76d.r2.dev/copy_87A0C2E5-40A6-47FD-A664-06245CC80786.mp4" type="video/mp4">
+      </video>
+    </div>
+
+    <!-- 2. HERO SECTION VSL -->
+    <main class="relative flex-grow flex flex-col items-center justify-center min-h-[100dvh] pt-20 pb-16 px-4 z-10">
+      
+      <!-- Textos Superiores -->
+      <div class="w-full max-w-5xl text-center flex flex-col items-center justify-center mb-8 pointer-events-none">
+        <h1 class="text-3xl md:text-5xl lg:text-6xl font-bold text-brand-white leading-none tracking-[-1px] animate-slide-up text-shadow-video uppercase">
+          EL MODELO DE NEGOCIO
+        </h1>
+        <h2 class="text-3xl md:text-5xl lg:text-6xl font-semibold text-[#5312D5] leading-none mt-2 mb-3 animate-slide-up text-shadow-video" style="animation-delay: 0.1s;">
+          que te cambiará la vida
+        </h2>
+        <p class="text-base md:text-lg text-[#969696] font-normal animate-slide-up text-shadow-video lowercase tracking-widest mt-2" style="animation-delay: 0.2s;">
+          (y no, no es of)
+        </p>
+      </div>
+
+      <!-- Recuadro Principal del Video -->
+      <div class="relative w-full max-w-4xl aspect-video rounded-[16px] overflow-hidden shadow-glow border border-brand-white/10 animate-slide-up bg-brand-black" style="animation-delay: 0.3s;">
+        
+        <!-- Video Tag Principal -->
+        <video x-ref="mainVideo" 
+               @ended="showForm()" 
+               @play="isPlaying = true"
+               @pause="isPlaying = false"
+               class="absolute inset-0 w-full h-full object-cover" 
+               playsinline 
+               preload="auto"
+               aria-label="Video explicativo del modelo de negocio">
+          <source src="https://pub-c87f0e975c6440f09b2a0b52ff33f76d.r2.dev/copy_87A0C2E5-40A6-47FD-A664-06245CC80786.mp4" type="video/mp4">
+          Tu navegador no soporta la etiqueta de video.
+        </video>
+
+        <!-- Custom Play Button Overlay -->
+        <div x-show="!isPlaying" 
+             @click="togglePlay()" 
+             x-transition.opacity 
+             class="absolute inset-0 flex items-center justify-center bg-black/40 cursor-pointer hover:bg-black/30 transition-colors z-20 group"
+             aria-label="Reproducir video"
+             role="button"
+             tabindex="0"
+             @keydown.enter="togglePlay()">
+          <div class="w-20 h-20 md:w-24 md:h-24 bg-brand-purple text-brand-white backdrop-blur-md rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(74,0,224,0.6)] group-hover:scale-105 group-hover:shadow-[0_0_40px_rgba(74,0,224,0.8)] transition-all animate-pulse-slow">
+            <span class="material-symbols-outlined text-[40px] md:text-[48px] ml-2">play_arrow</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 3. SECCIÓN DE CONFIRMACIÓN LEGAL (Fija en el DOM, con Blur Overlay) -->
+      <div id="seccion-registro" class="mt-8 md:mt-12 w-full max-w-2xl relative animate-slide-up" style="animation-delay: 0.4s;">
+        
+        <!-- Overlay de Bloqueo (Blur) -->
+        <div x-show="!videoFinished"
+             x-transition:leave="transition ease-in-out duration-700"
+             x-transition:leave-start="opacity-100 backdrop-blur-[6px]"
+             x-transition:leave-end="opacity-0 backdrop-blur-none"
+             class="absolute inset-0 z-30 flex flex-col items-center justify-center bg-brand-black/30 backdrop-blur-[6px] rounded-[16px] border border-brand-white/10">
+          <span class="material-symbols-outlined text-brand-white/80 text-[40px] mb-3 animate-pulse-slow drop-shadow-md">lock</span>
+          <p class="text-brand-white/90 text-sm md:text-base font-semibold tracking-wide text-center px-6 drop-shadow-md">
+            Mira el video hasta el final para desbloquear el registro.
+          </p>
+        </div>
+
+        <!-- Contenedor del Formulario (Siempre visible para mantener la estructura) -->
+        <div :class="{'opacity-70 pointer-events-none select-none': !videoFinished}" 
+             class="bg-brand-white/10 border border-brand-white/20 p-6 md:p-8 rounded-[16px] shadow-2xl flex flex-col transition-all duration-700">
+          
+          <!-- Botón Redirección Jotform -->
+          <div class="mb-8 w-full text-center">
+            <button @click="goToJotform()" 
+                    :disabled="!canSubmit"
+                    :class="{'opacity-40 cursor-not-allowed bg-brand-lightGray/10 text-brand-white/50 border border-brand-lightGray/20': !canSubmit, 'bg-brand-purple text-brand-white hover:scale-[1.02] shadow-[0_0_20px_rgba(74,0,224,0.5)] border border-brand-purple': canSubmit}"
+                    class="w-full py-4 px-4 rounded-full font-bold text-sm md:text-lg uppercase tracking-widest transition-all duration-300 focus:ring-4 focus:ring-brand-purple/50 flex items-center justify-center gap-2">
+              <span>¡QUIERO REGISTRARME!</span>
+              <span x-show="canSubmit" class="material-symbols-outlined text-[24px]" aria-hidden="true">arrow_forward</span>
+              <span x-show="!canSubmit" class="material-symbols-outlined text-[20px] opacity-50" aria-hidden="true">lock</span>
+            </button>
+            <p x-show="!canSubmit" class="text-[12px] md:text-sm text-brand-lightGray/70 mt-3 font-medium">Selecciona las casillas legales debajo para habilitar el botón.</p>
+          </div>
+
+          <div class="space-y-5 border-t border-brand-white/10 pt-6">
+            <label class="flex items-start gap-4 cursor-pointer group">
+              <input type="checkbox" x-model="legalCheck1" class="custom-checkbox flex-shrink-0 mt-0.5">
+              <span class="text-sm md:text-base text-brand-lightGray group-hover:text-brand-white transition-colors leading-relaxed">
+                Declaro bajo protesta de decir verdad que soy <strong>mayor de 18 años</strong>. Entiendo que se me solicitará un documento de identidad oficial (KYC) antes de cualquier acuerdo.
+              </span>
+            </label>
+
+            <label class="flex items-start gap-4 cursor-pointer group">
+              <input type="checkbox" x-model="legalCheck2" class="custom-checkbox flex-shrink-0 mt-0.5">
+              <span class="text-sm md:text-base text-brand-lightGray group-hover:text-brand-white transition-colors leading-relaxed">
+                Autorizo explícitamente a Doll Management (DBA: Rossell. M.) a procesar mis datos de contacto para fines de reclutamiento, aceptando la Política de Privacidad y los Términos y Condiciones.
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- 4. FOOTER LEGAL & LINKS (Siempre visible) -->
+    <footer class="bg-brand-dark border-t border-brand-softDark py-16 px-4 text-center text-brand-lightGray relative z-20">
+      <div class="max-w-4xl mx-auto flex flex-col items-center">
+        <img src="https://raw.githubusercontent.com/moisesrossell-cyber/Alicia-Project/79310490f8e91a6f4c255418cc3bd8e18c14d3ca/Logo.png" alt="Logotipo oficial de Doll Management" class="h-12 md:h-16 opacity-50 grayscale mb-8" />
+        
+        <nav aria-label="Enlaces legales" class="flex flex-wrap justify-center items-center gap-4 md:gap-8 text-[13px] font-medium text-brand-lightGray/70 mb-6 uppercase tracking-widest">
+          <button @click="activeModal = 'privacy'" class="hover:text-brand-white transition-colors focus:outline-none focus:underline" aria-label="Leer Política de Privacidad">Privacidad</button>
+          <span class="hidden md:inline" aria-hidden="true">|</span>
+          <button @click="activeModal = 'terms'" class="hover:text-brand-white transition-colors focus:outline-none focus:underline" aria-label="Leer Términos y Condiciones">Términos</button>
+          <span class="hidden md:inline" aria-hidden="true">|</span>
+          <button @click="activeModal = 'cookies'" class="hover:text-brand-white transition-colors focus:outline-none focus:underline" aria-label="Leer Política de Cookies">Cookies</button>
+          <span class="hidden md:inline" aria-hidden="true">|</span>
+          <button @click="activeModal = 'refunds'" class="hover:text-brand-white transition-colors focus:outline-none focus:underline" aria-label="Leer Política de Reembolsos">Reembolsos</button>
+        </nav>
+
+        <div class="mb-8">
+          <button @click="activeModal = 'privacy'" class="text-[12px] font-bold text-brand-lightGray/60 hover:text-brand-white transition-colors underline decoration-brand-lightGray/30" aria-label="No vender ni compartir mi información personal (CCPA)">
+            Do Not Sell or Share My Personal Information
+          </button>
+        </div>
+
+        <div class="text-[11px] md:text-xs text-brand-lightGray/40 leading-relaxed max-w-3xl mb-8 space-y-3">
+          <p>
+            <strong>Aviso de Cumplimiento Legal (FOSTA-SESTA & 18+):</strong> Este sitio web y los servicios de representación están estrictamente limitados a adultos que consienten. Doll Management tiene una política de tolerancia cero hacia la trata de personas, prostitución o cualquier actividad ilegal. Todo talento debe someterse a un proceso estricto de KYC.
+          </p>
+          <p>
+            <strong>18 U.S.C. 2257 Exemption Statement:</strong> Doll Management (operado por Rossell. M.) no produce contenido para adultos. Actuamos exclusivamente como una agencia de representación y marketing. Todos los registros requeridos por la ley 18 U.S.C. § 2257 y normativas asociadas son mantenidos directamente por las plataformas de terceros (ej. Olymp Date) donde los talentos alojan su contenido.
+          </p>
+        </div>
+        
+        <p class="text-[11px] text-brand-lightGray/30 uppercase tracking-widest">
+          &copy; 2026 Doll Management. Todos los derechos reservados. <br class="md:hidden mt-2"/> <a href="mailto:legal@dollmanagement.com" class="hover:text-brand-white transition-colors">legal@dollmanagement.com</a>
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- 5. COOKIE BANNER -->
+  <div x-show="!cookiesAccepted"
+       x-transition:enter="transition ease-out duration-500"
+       x-transition:enter-start="opacity-0 translate-y-full"
+       x-transition:enter-end="opacity-100 translate-y-0"
+       class="fixed bottom-0 left-0 right-0 z-[100] p-4 pointer-events-none"
+       style="display: none;"
+       role="alert" aria-live="polite">
+    <div class="max-w-5xl mx-auto pointer-events-auto bg-brand-white text-brand-dark p-6 rounded-[16px] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 border border-gray-200">
+      <div class="flex items-start gap-4">
+        <span class="material-symbols-outlined text-[24px]" aria-hidden="true">analytics</span>
+        <div class="text-[13px] text-brand-textGray leading-relaxed">
+          <p class="mb-1 font-semibold text-brand-dark">Privacidad y Rastreo de Datos</p>
+          Utilizamos cookies esenciales y píxeles de seguimiento (incluyendo Meta Ads y Google Analytics) para medir el rendimiento de nuestras campañas y ofrecerte una experiencia segura. Al continuar, otorgas tu consentimiento explícito.
+          <button @click="activeModal = 'cookies'" class="text-brand-dark font-semibold underline ml-1" aria-label="Saber más sobre cookies">Saber más</button>.
+        </div>
+      </div>
+      <div class="flex shrink-0 w-full md:w-auto">
+        <button @click="acceptCookies()" aria-label="Aceptar y cerrar banner de cookies" class="w-full md:w-auto px-8 py-3 bg-brand-dark text-brand-white text-xs font-bold uppercase tracking-widest rounded-[8px] hover:bg-black transition-colors shadow-md focus:ring-4 focus:ring-brand-dark/50">
+          Aceptar Cookies
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. MODALES LEGALES GLOBALES -->
+  <div x-show="activeModal !== null" 
+       class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-brand-black/60 backdrop-blur-sm"
+       x-transition.opacity
+       style="display: none;"
+       role="dialog" aria-modal="true">
+    
+    <div class="bg-brand-white w-full max-w-2xl max-h-[85vh] rounded-[16px] shadow-2xl flex flex-col overflow-hidden" @click.away="activeModal = null">
+      
+      <div class="flex justify-between items-center p-6 border-b border-gray-200">
+        <h3 class="font-bold text-xl text-brand-dark uppercase tracking-tight" x-text="getModalTitle()"></h3>
+        <button @click="activeModal = null" aria-label="Cerrar ventana emergente" class="text-gray-400 hover:text-brand-dark transition-colors focus:ring-2 focus:ring-brand-dark rounded">
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+      </div>
+
+      <div class="p-6 md:p-8 overflow-y-auto text-sm text-brand-textGray space-y-4 leading-relaxed font-body">
+        
+        <!-- PRIVACIDAD -->
+        <div x-show="activeModal === 'privacy'">
+          <p><strong>Última actualización: Noviembre 2026</strong></p>
+          <p>Doll Management (operado por Rossell. M., en adelante "el DBA"), se compromete a proteger su privacidad. Esta Política explica cómo recopilamos, utilizamos y compartimos su información personal cuando visita nuestro sitio web o solicita nuestros servicios.</p>
+          <p><strong>1. Información que recopilamos:</strong> A través de nuestro formulario seguro (Jotform), recopilamos su Nombre Legal, número de WhatsApp y Dirección IP (por motivos de auditoría de consentimiento). Posteriormente (KYC), solicitaremos identificaciones gubernamentales por vías seguras para verificar su edad.</p>
+          <p><strong>2. Uso de la Información:</strong> Su información se utiliza exclusivamente para evaluar su perfil, contactarle vía WhatsApp y establecer un contrato de servicios de management. Cumpliendo con la ley CAN-SPAM, no enviaremos correos o mensajes promocionales masivos no solicitados.</p>
+          <p><strong>3. Transferencia Internacional y CCPA:</strong> Al proveer su información, usted consiente que sus datos puedan ser procesados en servidores ubicados fuera de su país de residencia. Si es residente de California, usted tiene el derecho a solicitar que no se venda ni comparta su información ("Do Not Sell My Info") escribiendo a nuestro equipo legal.</p>
+          <p><strong>4. Sus Derechos:</strong> Puede solicitar la eliminación, modificación o acceso a sus datos en cualquier momento enviando una solicitud formal a <strong>legal@dollmanagement.com</strong>.</p>
+        </div>
+
+        <!-- TÉRMINOS Y DMCA -->
+        <div x-show="activeModal === 'terms'">
+          <p><strong>Términos y Condiciones de Uso</strong></p>
+          <p><strong>1. Naturaleza del Servicio:</strong> Doll Management provee servicios de representación y marketing digital para creadores de contenido (talentos) en plataformas de terceros. No somos empleados ni empleadores directos de los talentos.</p>
+          <p><strong>2. Edad y Veracidad:</strong> Todo usuario debe tener 18 años o más. Proveer información o identificaciones falsas resultará en el bloqueo permanente, denuncia a las autoridades y rescisión de cualquier contrato.</p>
+          <p><strong>3. Cumplimiento FOSTA-SESTA:</strong> Prohibimos estrictamente el uso de nuestros servicios para promover, facilitar o realizar actos de trata de personas, prostitución, o cualquier otra actividad ilegal bajo jurisdicción internacional y de los EE. UU.</p>
+          <p><strong>4. Propiedad Intelectual y DMCA (Safe Harbor):</strong> Doll Management respeta los derechos de autor de terceros. Si usted cree que algún material alojado por nosotros o nuestros talentos infringe sus derechos de autor, envíe un aviso formal de retiro DMCA (Takedown Notice) a nuestro Agente Designado en: <strong>legal@dollmanagement.com</strong>.</p>
+        </div>
+
+        <!-- COOKIES -->
+        <div x-show="activeModal === 'cookies'">
+          <p><strong>Política de Cookies y Rastreo</strong></p>
+          <p>Utilizamos cookies propias y de terceros (como el Píxel de Meta/Facebook Ads y Google Analytics) para entender cómo interactúan los usuarios con nuestra campaña publicitaria y para proteger el sitio contra spam (Cloudflare).</p>
+          <p><strong>Tipos de Cookies:</strong></p>
+          <ul class="list-disc pl-5 space-y-2">
+            <li><strong>Estrictamente necesarias:</strong> Funciones del sistema, persistencia del 'Age Gate' y seguridad perimetral.</li>
+            <li><strong>Analíticas y Publicitarias:</strong> Usadas para rastrear la atribución de anuncios y el rendimiento de tráfico. Los datos compartidos con Meta o Google son pseudonimizados según sus respectivas políticas de privacidad.</li>
+          </ul>
+        </div>
+
+        <!-- REEMBOLSOS -->
+        <div x-show="activeModal === 'refunds'">
+          <p><strong>Política de Devoluciones y Pagos</strong></p>
+          <p>Dado que Doll Management no cobra tarifas por adelantado a los solicitantes a través de este sitio web, no existe una política de reembolso aplicable a la etapa de reclutamiento.</p>
+          <p>Los términos relacionados con la distribución de ingresos, pagos por comisiones de management o retenciones, se detallarán exclusivamente en el Contrato de Management Privado y Formal que el talento firmará tras aprobar la auditoría de KYC.</p>
+        </div>
+
+      </div>
+      
+      <div class="p-6 border-t border-gray-100 bg-gray-50 flex justify-end">
+        <button @click="activeModal = null" aria-label="Aceptar y cerrar información legal" class="px-6 py-2.5 bg-brand-dark text-brand-white text-[13px] font-bold uppercase tracking-widest rounded-[8px] hover:bg-black transition-colors focus:ring-4 focus:ring-brand-dark/50">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function landingLogic() {
+      return {
+        // Datos persistentes
+        ageVerified: localStorage.getItem('doll_ageVerified') === 'true',
+        cookiesAccepted: localStorage.getItem('doll_cookiesAccepted') === 'true',
+        
+        // Estado del Video Nativo
+        isPlaying: false,
+        videoFinished: false,
+        
+        // Estado del Formulario
+        legalCheck1: false,
+        legalCheck2: false,
+
+        // Estado del modal legal
+        activeModal: null,
+
+        // Computado: ¿Puede enviar el formulario?
+        get canSubmit() {
+          return this.legalCheck1 && this.legalCheck2;
+        },
+
+        init() {
+          this.syncVideos();
+          
+          // CASO B: Si ya aceptó la mayoría de edad en una visita pasada, intentar Autoplay.
+          if (this.ageVerified) {
+            this.$nextTick(() => {
+              const video = this.$refs.mainVideo;
+              if (video) {
+                video.play().then(() => {
+                  this.isPlaying = true; // El navegador permitió el autoplay
+                }).catch(() => { 
+                  // El navegador bloqueó el autoplay por falta de interacción.
+                  // Mostramos el botón de Play para que la usuaria lo inicie.
+                  this.isPlaying = false; 
+                });
+              }
+            });
+          }
+        },
+
+        acceptAge() {
+          this.ageVerified = true;
+          localStorage.setItem('doll_ageVerified', 'true');
+          
+          // CASO A: Autoplay al hacer clic en "Sí, tengo más de 18 años" (Permitido siempre porque hay un clic previo)
+          this.$nextTick(() => {
+            const video = this.$refs.mainVideo;
+            if (video) {
+              video.play().then(() => {
+                this.isPlaying = true;
+              }).catch(() => { this.isPlaying = false; });
+            }
+          });
+        },
+
+        acceptCookies() {
+          this.cookiesAccepted = true;
+          localStorage.setItem('doll_cookiesAccepted', 'true');
+        },
+
+        getModalTitle() {
+          const titles = {
+            'privacy': 'Política de Privacidad',
+            'terms': 'Términos y Condiciones (DMCA)',
+            'cookies': 'Política de Cookies',
+            'refunds': 'Política de Reembolsos'
+          };
+          return titles[this.activeModal] || '';
+        },
+
+        syncVideos() {
+          this.$nextTick(() => {
+            const main = this.$refs.mainVideo;
+            const bg = this.$refs.bgVideo;
+            if (main && bg) {
+              main.addEventListener('play', () => bg.play());
+              main.addEventListener('pause', () => bg.pause());
+              main.addEventListener('seeking', () => bg.currentTime = main.currentTime);
+              main.addEventListener('seeked', () => bg.currentTime = main.currentTime);
+              
+              main.addEventListener('timeupdate', () => {
+                if (Math.abs(bg.currentTime - main.currentTime) > 0.3) {
+                  bg.currentTime = main.currentTime;
+                }
+              });
+            }
+          });
+        },
+
+        togglePlay() {
+          const video = this.$refs.mainVideo;
+          if (video.paused) {
+            video.play();
+            this.isPlaying = true;
+          } else {
+            video.pause();
+            this.isPlaying = false;
+          }
+        },
+
+        showForm() {
+          this.videoFinished = true;
+          this.isPlaying = false;
+          // Opcional: Pequeño scroll suave hacia el formulario cuando se desbloquea
+          setTimeout(() => {
+            document.getElementById('seccion-registro').scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 400);
+        },
+
+        goToJotform() {
+          if (this.canSubmit) {
+            window.location.href = 'https://form.jotform.com/263133023117039';
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>
